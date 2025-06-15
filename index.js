@@ -58,6 +58,7 @@ app.post("/sign-up", async (req, res)=>{
             email,
             password: hashedPassword,
             firstName,
+            // lastName,
             state
         })
 
@@ -77,7 +78,8 @@ app.post("/sign-up", async (req, res)=>{
 app.post("/login", async (req, res)=>{
     const { email, password } = req.body
 
-    const user = await Auth.findOne({ email }).select("-password")
+    const user = await Auth.findOne({ email })
+    //.select("-password")
 
     if(!user){
         return res.status(400).json({message: "User account does not exist."})
@@ -102,9 +104,21 @@ app.post("/login", async (req, res)=>{
         {expiresIn: "5m"}  //41
     )
 
-    res.status.apply(200).json({
-        message: "Login",
+    const refreshToken = jwt.sign(
+        { id: user?._id },
+        process.env.REFRESH_TOKEN,
+        {expiresIn: "30d"}
+    )
+
+    res.status(200).json({
+        message: "Login Successful",
         accessToken,
-        user
+        user: {
+            email: user?.email,
+            firstName: user?.firstName,
+            lastName: user?.lastName,
+            state: user?.state
+        },
+        refreshToken
     })
 })
