@@ -3,7 +3,11 @@ const mongoose = require('mongoose');
 const dotenv = require("dotenv");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
-const Auth = require("./authModel");
+const Auth = require("./models/authModel");
+const { handleGetAllUsers, handleUserRegistration } = require("./controllers/index");
+const { validateRegister } = require("./middleWare");
+
+// const Auth = require("./authModel");
 // const cors = require("cors")
 // const routes = require("./Routes")
 
@@ -30,50 +34,8 @@ app.get("/", (req, res)=>{
   res.status(200).json({message: "Welcome to Divine Heritage Computer Server"})
 })
 
-app.post("/sign-up", async (req, res)=>{
-
-    try {
-        const { email, password, firstName, lastName, state } = req.body
-        if(!email){
-            return res.status(400).json({message: "Please add your email"})
-        }
-
-        if(!password){
-            return res.status(400).json({message: "Please enter password" })
-        }
-
-        const existingUser = await Auth.findOne({ email })
-
-        if(existingUser){
-            return res.status(400).json({message: "User account already exist"})
-        }
-
-        if(password.length < 6){
-            return res.status(400).json({message: "Password should be a min of 6 characters"})
-        }
-
-        const hashedPassword = await bcrypt.hash(password, 12)
-
-        const newUser = new Auth({
-            email,
-            password: hashedPassword,
-            firstName,
-            // lastName,
-            state
-        })
-
-        await newUser.save()
-
-        // Send user Email
-
-        res.status(201).json({
-            message: "User account created successfully",
-            newUser: { email, firstName, lastName, state}
-        })
-    } catch (error) {
-        res.status(500).json({message: error.message})
-    }
-})
+// validateRegister is a middleware
+app.post("/sign-up", validateRegister, handleUserRegistration)
 
 app.post("/login", async (req, res)=>{
     const { email, password } = req.body
@@ -122,3 +84,22 @@ app.post("/login", async (req, res)=>{
         refreshToken
     })
 })
+
+app.post("/forgot-password", async (req, res) => {
+
+})
+
+app.patch("/reset-password", async (req, res) => {
+
+})
+
+// MVC => Model View  Controllers, Routes
+
+// Middlewares / Authorization / Validations
+
+// Deploy
+
+// Controller
+
+// A middleware is a function that runs in the middle to the point where your application handles the backend to the points where it handles the APIs is where the middleware is. It is used for validations, you don't want to overload your controllers. You use the middleware for authorization. The middleware is seen as a gateman that check you before allowing you in. 
+app.get("/all-users", handleGetAllUsers)
