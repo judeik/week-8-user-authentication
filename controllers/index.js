@@ -1,5 +1,7 @@
 const Auth = require("../models/authModel")
+const { validateEmail } = require("../sendMail")
 const { findUserService } = require("../service")
+const bcrypt = require("bcryptjs")
 
 
 const handleGetAllUsers = async (req, res) => {

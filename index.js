@@ -5,7 +5,7 @@ const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const Auth = require("./models/authModel");
 const { handleGetAllUsers, handleUserRegistration } = require("./controllers/index");
-const { validateRegister } = require("./middleWare");
+const { validateRegister, authorization } = require("./middleWare");
 
 // const Auth = require("./authModel");
 // const cors = require("cors")
@@ -35,7 +35,7 @@ app.get("/", (req, res)=>{
 })
 
 // validateRegister is a middleware
-app.post("/sign-up", validateRegister, handleUserRegistration)
+app.post("/sign-up", validateRegister, handleUserRegistration);
 
 app.post("/login", async (req, res)=>{
     const { email, password } = req.body
@@ -102,4 +102,7 @@ app.patch("/reset-password", async (req, res) => {
 // Controller
 
 // A middleware is a function that runs in the middle to the point where your application handles the backend to the points where it handles the APIs is where the middleware is. It is used for validations, you don't want to overload your controllers. You use the middleware for authorization. The middleware is seen as a gateman that check you before allowing you in. 
-app.get("/all-users", handleGetAllUsers)
+
+// Authorization using middleware
+
+app.get("/all-users", authorization, handleGetAllUsers)
