@@ -4,7 +4,7 @@ const dotenv = require("dotenv");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const Auth = require("./models/authModel");
-const { handleGetAllUsers, handleUserRegistration } = require("./controllers/index");
+const { handleGetAllUsers, handleUserRegistration, handleLogin, handleForgotPassword, handleResetPassword } = require("./controllers/index");
 const { validateRegister, authorization } = require("./middleWare");
 
 // const Auth = require("./authModel");
@@ -37,70 +37,11 @@ app.get("/", (req, res)=>{
 // validateRegister is a middleware
 app.post("/sign-up", validateRegister, handleUserRegistration);
 
-app.post("/login", async (req, res)=>{
-    const { email, password } = req.body
+app
 
-    const user = await Auth.findOne({ email })
-    //.select("-password")
+app.post("/forgot-password", handleForgotPassword)
 
-    if(!user){
-        return res.status(400).json({message: "User account does not exist."})
-    }
-
-    const isMatch = await bcrypt.compare(password, user?.password)
-
-    // When password did not match
-    if(!isMatch){
-        return res.status(400).json({message: "Incorrect email or password."})
-    }
-
-    // if(!user.verified){
-
-    // }
-
-
-    //  Generate a token 
-    const accessToken = jwt.sign(  // User signature
-        { id: user?._id }, // If you are sure the user have an ID
-        process.env.ACCESS_TOKEN,
-        {expiresIn: "1h",}  //41
-    );
-
-    const refreshToken = jwt.sign(
-        { id: user?._id },
-        process.env.REFRESH_TOKEN,
-        {expiresIn: "30d"}
-    )
-
-    res.status(200).json({
-        message: "Login Successful",
-        accessToken,
-        user: {
-            email: user?.email,
-            firstName: user?.firstName,
-            lastName: user?.lastName,
-            state: user?.state,
-            role: user?.role
-        },
-        refreshToken
-    })
-})
-
-app.post("/forgot-password", async (req, res) => {
-
-})
-
-app.patch("/reset-password", authorization, async (req, res) => {
-    const { password } = req.body
-
-    const user = await Auth.findOne({ email: req.user.email })
-
-    if(!user){
-        return res.status(404).json({message: "User account not found"})
-    }
-
-    const hashedPassword = await bcrypt.hash(password, 12)
-})
+app.patch("/reset-password", authorization, handleResetPassword)
 
 // MVC => Model View  Controllers, Routes
 
