@@ -63,8 +63,8 @@ app.post("/login", async (req, res)=>{
     const accessToken = jwt.sign(  // User signature
         { id: user?._id }, // If you are sure the user have an ID
         process.env.ACCESS_TOKEN,
-        {expiresIn: "5m"}  //41
-    )
+        {expiresIn: "1h",}  //41
+    );
 
     const refreshToken = jwt.sign(
         { id: user?._id },
@@ -79,7 +79,8 @@ app.post("/login", async (req, res)=>{
             email: user?.email,
             firstName: user?.firstName,
             lastName: user?.lastName,
-            state: user?.state
+            state: user?.state,
+            role: user?.role
         },
         refreshToken
     })
@@ -89,8 +90,16 @@ app.post("/forgot-password", async (req, res) => {
 
 })
 
-app.patch("/reset-password", async (req, res) => {
+app.patch("/reset-password", authorization, async (req, res) => {
+    const { password } = req.body
 
+    const user = await Auth.findOne({ email: req.user.email })
+
+    if(!user){
+        return res.status(404).json({message: "User account not found"})
+    }
+
+    const hashedPassword = await bcrypt.hash(password, 12)
 })
 
 // MVC => Model View  Controllers, Routes

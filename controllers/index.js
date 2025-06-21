@@ -45,7 +45,7 @@ const handleUserRegistration = async (req, res)=>{
             email,
             password: hashedPassword,
             firstName,
-            // lastName,
+            lastName,
             state
         })
 

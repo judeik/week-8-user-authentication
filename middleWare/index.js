@@ -1,8 +1,9 @@
 const jwt = require("jsonwebtoken")
+const Auth = require("../models/authModel")
 
 const validateRegister = (req, res) =>{
 
-    const { email, password, firstName, lastname, state } = req.body
+    const { email, password, firstName, lastName, state } = req.body
 
     const errors = []
 
@@ -22,7 +23,7 @@ const validateRegister = (req, res) =>{
 }
 
 // NB: It is not advisable to use authorization but use auth
-const authorization = (req, res, next) => {
+const authorization = async (req, res, next) => {
 
     const token = req.header("Authorization")
 
@@ -30,17 +31,35 @@ const authorization = (req, res, next) => {
     if(!token){
         return res.status(401).json({message: "Please login!"})
     }
-// console.log({token}); 1:10
+// console.log({token}); 
 
     const splitToken = token.split(" ")
-    console.log(splitToken);
+    // console.log(splitToken);
 
     const realToken = splitToken[1]
-    console.log(realToken);
+    // console.log(realToken);
 
-    const decoded = jwt.verify(realToken, $(process.env.ACCESS_TOKEN))
+    const decoded = jwt.verify(realToken, `${process.env.ACCESS_TOKEN}`)
+    
+    // console.log(decoded);
+    if(!decoded){
+        return res.status(401).json({message: "Unauthorized Please login"})
+    }
 
-    console.log(realToken);
+    const user = await Auth.findById(decoded.id)
+
+    if(!user){
+        return res.status(404).json({message: "User account does not exist"})
+    }
+    
+    if(user?.role !== "admin"){
+        return res.status(401).json({message: "Invalid AUTHORIZATION"})
+    }
+    
+    // console.log(user);
+    req.user = user
+
+    next()
 
 }
 
